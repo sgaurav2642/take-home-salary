@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Take Home Salary Calculator</title>
+  <style>
+    body { font-family: Arial; padding: 20px; background-color: #f0f0f0; }
+    input, select { padding: 8px; margin: 5px; width: 200px; }
+    button { padding: 10px 20px; }
+  </style>
+</head>
+<body>
+  <h2>Take Home Salary Calculator</h2>
+  <form id="salaryForm">
+    <input type="number" name="gross" placeholder="Gross Salary" required /><br />
+    <input type="number" name="variable" placeholder="Variable Pay" /><br />
+
+    <select name="tax_regime">
+      <option value="Old">Old Regime</option>
+      <option value="New">New Regime</option>
+    </select><br />
+
+    <input type="number" name="section80c" placeholder="Section 80C" /><br />
+    <input type="number" name="home_loan" placeholder="Home Loan Interest" /><br />
+    <input type="number" name="hra_received" placeholder="HRA Received" /><br />
+    <input type="number" name="rent_paid" placeholder="Rent Paid" /><br />
+    <input type="number" name="NPS2" placeholder="NPS Contribution" /><br />
+
+    <button type="submit">Calculate</button>
+  </form>
+
+  <h3 id="result"></h3>
+
+  <script>
+    const form = document.getElementById('salaryForm');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      const jsonData = {};
+      formData.forEach((value, key) => jsonData[key] = Number(value));
+
+      const response = await fetch('/salary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(jsonData)
+      });
+
+      const data = await response.json();
+      document.getElementById('result').innerText = `Monthly Take Home Salary: ₹${data.monthly_salary.toFixed(2)}`;
+    });
+  </script>
+</body>
+</html>

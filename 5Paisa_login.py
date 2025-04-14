@@ -17,10 +17,15 @@ def take_home_salary(gross, variable, tax_regime, section80c, home_loan, hra_rec
       tax= New_Tax_Regime.new_tax_regime(gross, variable)
       return tax
    else:
-       tax= New_Tax_Regime.old_tax_regime(gross,variable, tax_regime, section80c, home_loan, hra_received, rent_paid, nps)
+       tax= New_Tax_Regime.old_tax_regime(gross,variable, section80c, home_loan, hra_received, rent_paid, nps)
        return tax
 
 #baseurl = "https://gorest.co.in/public/v2/users"
+
+@app.route('/')
+def index():
+    return render_template('index.html')  # This looks for templates/index.html
+
 
 #auth_token = "bearer 53c961fbfd2f25d6677ebde66af0c9bd290af8d3e5257dcd5930ff798c40b321"
 @app.route('/salary', methods=['GET', 'POST'])
@@ -46,8 +51,6 @@ def calculate_salary():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80)
-
-
 
 
 
