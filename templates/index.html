@@ -1,55 +1,130 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Take Home Salary Calculator</title>
-  <style>
-    body { font-family: Arial; padding: 20px; background-color: #f0f0f0; }
-    input, select { padding: 8px; margin: 5px; width: 200px; }
-    button { padding: 10px 20px; }
-  </style>
+    <meta charset="UTF-8">
+    <title>Take-Home Salary Calculator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(120deg, #f6f9fc, #e9f2ff);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            padding: 30px 40px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #2980b9;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #1c5980;
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 20px;
+            color: green;
+            font-weight: bold;
+        }
+
+        .loader {
+            display: none;
+            margin-top: 20px;
+            font-style: italic;
+            color: #555;
+        }
+    </style>
 </head>
 <body>
-  <h2>Take Home Salary Calculator</h2>
-  <form id="salaryForm">
-    <input type="number" name="gross" placeholder="Gross Salary" required /><br />
-    <input type="number" name="variable" placeholder="Variable Pay" /><br />
+    <div class="container">
+        <h2>🧮 Take-Home Salary Calculator</h2>
+        <form id="salaryForm">
+            <input type="number" placeholder="Gross Salary" name="gross" required>
+            <input type="number" placeholder="Variable Pay" name="variable">
+            <select name="tax_regime">
+                <option value="Old">Old Tax Regime</option>
+                <option value="New">New Tax Regime</option>
+            </select>
+            <input type="number" placeholder="Section 80C (e.g. LIC, PPF)" name="section80c">
+            <input type="number" placeholder="Home Loan Interest" name="home_loan">
+            <input type="number" placeholder="NPS Contribution" name="NPS2">
+            <input type="number" placeholder="HRA Received" name="hra_received">
+            <input type="number" placeholder="Rent Paid" name="rent_paid">
+            <button type="submit">Calculate ✨</button>
+        </form>
 
-    <select name="tax_regime">
-      <option value="Old">Old Regime</option>
-      <option value="New">New Regime</option>
-    </select><br />
+        <div class="loader" id="loader">Calculating your salary... please wait</div>
+        <div class="result" id="result"></div>
+    </div>
 
-    <input type="number" name="section80c" placeholder="Section 80C" /><br />
-    <input type="number" name="home_loan" placeholder="Home Loan Interest" /><br />
-    <input type="number" name="hra_received" placeholder="HRA Received" /><br />
-    <input type="number" name="rent_paid" placeholder="Rent Paid" /><br />
-    <input type="number" name="NPS2" placeholder="NPS Contribution" /><br />
+    <script>
+        document.getElementById("salaryForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
 
-    <button type="submit">Calculate</button>
-  </form>
+            const form = e.target;
+            const formData = new FormData(form);
+            const jsonData = {};
 
-  <h3 id="result"></h3>
+            formData.forEach((value, key) => {
+                jsonData[key] = parseFloat(value) || 0;
+            });
 
-  <script>
-    const form = document.getElementById('salaryForm');
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+            document.getElementById("loader").style.display = "block";
+            document.getElementById("result").textContent = "";
 
-      const formData = new FormData(form);
-      const jsonData = {};
-      formData.forEach((value, key) => jsonData[key] = Number(value));
+            try {
+                const response = await fetch("/salary", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(jsonData)
+                });
 
-      const response = await fetch('/salary', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(jsonData)
-      });
+                const data = await response.json();
 
-      const data = await response.json();
-      document.getElementById('result').innerText = `Monthly Take Home Salary: ₹${data.monthly_salary.toFixed(2)}`;
-    });
-  </script>
+                document.getElementById("loader").style.display = "none";
+                document.getElementById("result").innerHTML = `
+                    🎉 <span style="color:#2c3e50;">Your estimated monthly take-home salary is:</span> <br>
+                    <span style="font-size: 24px; color: #27ae60;">₹${data.monthly_salary.toFixed(2)}</span>
+                `;
+            } catch (err) {
+                document.getElementById("loader").style.display = "none";
+                document.getElementById("result").textContent = "Something went wrong. Please try again.";
+                console.error(err);
+            }
+        });
+    </script>
 </body>
 </html>

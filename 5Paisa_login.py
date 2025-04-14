@@ -4,7 +4,7 @@ from py5paisa import FivePaisaClient
 import json
 import requests
 import config
-import New_Tax_Regime
+import calculate_tax
 from config import AUTH_TOKEN
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 
@@ -14,10 +14,10 @@ app = Flask(__name__)
 def take_home_salary(gross, variable, tax_regime, section80c, home_loan, hra_received, rent_paid, nps):
    tax_regime = tax_regime
    if tax_regime == "New":
-      tax= New_Tax_Regime.new_tax_regime(gross, variable)
+      tax= calculate_tax.new_tax_regime(gross, variable)
       return tax
    else:
-       tax= New_Tax_Regime.old_tax_regime(gross,variable, section80c, home_loan, hra_received, rent_paid, nps)
+       tax= calculate_tax.old_tax_regime(gross,variable, section80c, home_loan, hra_received, rent_paid, nps)
        return tax
 
 #baseurl = "https://gorest.co.in/public/v2/users"
@@ -44,7 +44,9 @@ def calculate_salary():
 
 
     tax= take_home_salary(gross, variable, tax_regime, section80c, home_loan, hra_received, rent_paid, nps)
-    net_salary= gross-tax-variable
+    pf=0.12*0.5*gross #provident fund and gratutity to be deducted
+    gratuity = 0.0481*0.5*gross
+    net_salary= gross-tax-variable-pf-gratuity
     monthly_salary = net_salary/12
     print(monthly_salary)
     return jsonify(monthly_salary=monthly_salary)
