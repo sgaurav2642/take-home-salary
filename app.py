@@ -1,6 +1,6 @@
 import os
 
-from py5paisa import FivePaisaClient
+#from py5paisa import FivePaisaClient
 import json
 import requests
 import config
