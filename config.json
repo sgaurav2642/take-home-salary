@@ -7,5 +7,11 @@
     "ENCRYPTION_KEY": "aHwmkB7FFnylgW4YeqHrEZyYbwTpIrss",
     "AUTH_TOKEN": "53c961fbfd2f25d6677ebde66af0c9bd290af8d3e5257dcd5930ff798c40b321",
     "PIN": "020392",
-    "BASE_URL": "https://gorest.co.in/public/v2/users"
+    "BASE_URL": "https://gorest.co.in/public/v2/users",
+    "DB_HOST": "database-1.cp0yg6suac1p.ap-south-1.rds.amazonaws.com",
+    "DB_PORT": "3306",
+    "DB_NAME": "trading",
+    "DB_USER": "admin",
+    "DB_PASSWORD": "KOTAK8II"
 }
+

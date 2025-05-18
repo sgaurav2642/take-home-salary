@@ -1,5 +1,6 @@
 import os
-
+import pandas as pd
+import db
 #from py5paisa import FivePaisaClient
 import json
 import requests
@@ -50,6 +51,35 @@ def calculate_salary():
     monthly_salary = net_salary/12
     print(monthly_salary)
     return jsonify(monthly_salary=monthly_salary)
+
+@app.route('/insert', methods=['GET', 'POST'])
+def insert():
+    """
+    Accept JSON (object or list) → convert to DataFrame → insert into MySQL.
+    """
+    payload = request.get_json(force=True)
+
+    # Normalize to list
+    if isinstance(payload, dict):
+        payload = [payload]
+    elif not isinstance(payload, list):
+        return jsonify(error="Invalid payload format"), 400
+
+    try:
+        df = pd.DataFrame(payload)
+        # Add default "user" if not present
+        if 'user' not in df.columns:
+            df['user'] = 'manual'
+
+        inserted_rows = db.insert_trades_df(df)
+        return jsonify(status="success", rows=inserted_rows), 201
+
+    except Exception as exc:
+        app.logger.error("Insert failed: %s", exc, exc_info=True)
+        return jsonify(status="error", message=str(exc)), 500
+
+
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
