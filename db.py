@@ -14,7 +14,7 @@ def insert_trades_df(df: pd.DataFrame) -> int:
     )
 
     # Ensure DataFrame has correct columns
-    expected_cols = ['symbol', 'trade_date', 'trade_time', 'quantity', 'trade_type','user','price']
+    expected_cols = ['symbol', 'trade_date', 'trade_time', 'quantity', 'trade_type', 'user']
     missing = set(expected_cols) - set(df.columns)
     if missing:
         raise ValueError(f"Missing required columns: {missing}")
