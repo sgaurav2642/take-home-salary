@@ -1,86 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Take-Home Salary Calculator</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(120deg, #f6f9fc, #e9f2ff);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            height: 100vh;
-            align-items: center;
-            justify-content: center;
-        }
+<meta charset="UTF-8">
+<title>Tax Calculator & Algo Trading</title>
+<style>
+    :root {
+        --blue: #2980b9;
+        --blue-dark: #1c5980;
+        --radius: 18px;
+    }
 
-        .container {
-            background: white;
-            padding: 30px 40px;
-            border-radius: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 500px;
-            text-align: center;
-        }
+    * {
+        margin: 0; padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', sans-serif;
+    }
 
-        h2 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-        }
+    body {
+        background: linear-gradient(120deg,#f6f9fc,#e9f2ff);
+        min-height: 100vh;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 40px 20px;
+    }
 
-        input, select, button {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border-radius: 10px;
-            border: 1px solid #ccc;
-            font-size: 16px;
-        }
+    .tabs-container {
+        width: 100%;
+        max-width: 500px;
+    }
 
-        button {
-            background-color: #2980b9;
-            color: white;
-            border: none;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
+    .tabs {
+        display: flex;
+        gap: 20px;
+    }
 
-        button:hover {
-            background-color: #1c5980;
-        }
+    .tab-btn {
+        flex: 1;
+        padding: 12px 0;
+        border: none;
+        border-radius: var(--radius) var(--radius) 0 0;
+        background: #fff;
+        color: #2c3e50;
+        font-weight: 600;
+        cursor: pointer;
+    }
 
-        .result {
-            margin-top: 20px;
-            font-size: 20px;
-            color: green;
-            font-weight: bold;
-        }
+    .tab-btn.active {
+        background: var(--blue);
+        color: #fff;
+    }
 
-        .loader {
-            display: none;
-            margin-top: 20px;
-            font-style: italic;
-            color: #555;
-        }
-    </style>
+    .panel {
+        display: none;
+        background: white;
+        padding: 30px 40px;
+        border-radius: 0 var(--radius) var(--radius) var(--radius);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .panel.active {
+        display: block;
+    }
+
+    h2 {
+        color: #2c3e50;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    input, select, button {
+        width: 100%;
+        padding: 12px;
+        margin: 10px 0;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+    }
+
+    button {
+        background-color: var(--blue);
+        color: white;
+        border: none;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+
+    button:hover {
+        background-color: var(--blue-dark);
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .loader, .result, #tradeResult {
+        margin-top: 20px;
+        font-style: italic;
+        min-height: 24px;
+    }
+
+    .result, #tradeResult {
+        font-style: normal;
+        font-weight: 600;
+        color: green;
+    }
+</style>
 </head>
 <body>
-    <div class="container">
+
+<div class="tabs-container">
+    <div class="tabs">
+        <button class="tab-btn active" data-panel="salaryPanel">Tax Calculator</button>
+        <button class="tab-btn" data-panel="tradePanel">Algo Trading</button>
+    </div>
+
+    <!-- Salary Calculator Panel -->
+    <div id="salaryPanel" class="panel active">
         <h2>🧮 Take-Home Salary Calculator</h2>
         <form id="salaryForm">
-            <input type="number" placeholder="Gross Salary" name="gross" required>
-            <input type="number" placeholder="Variable Pay" name="variable">
-            <select name="tax_regime">
+            <input type="number" placeholder="Gross Salary" name="gross" required />
+            <input type="number" placeholder="Variable Pay" name="variable" />
+
+            <select name="tax_regime" id="regimeSelect" required>
+                <option value="" disabled selected>Select Tax Regime</option>
                 <option value="Old">Old Tax Regime</option>
                 <option value="New">New Tax Regime</option>
             </select>
-            <input type="number" placeholder="Section 80C (e.g. LIC, PPF)" name="section80c">
-            <input type="number" placeholder="Home Loan Interest" name="home_loan">
-            <input type="number" placeholder="NPS Contribution" name="NPS2">
-            <input type="number" placeholder="HRA Received" name="hra_received">
-            <input type="number" placeholder="Rent Paid" name="rent_paid">
+
+            <div id="deductionsBlock">
+                <input type="number" placeholder="Section 80C (e.g. LIC, PPF)" name="section80c" />
+                <input type="number" placeholder="Home Loan Interest" name="home_loan" />
+                <input type="number" placeholder="NPS Contribution" name="NPS2" />
+                <input type="number" placeholder="HRA Received" name="hra_received" />
+                <input type="number" placeholder="Rent Paid" name="rent_paid" />
+            </div>
+
             <button type="submit">Calculate ✨</button>
         </form>
 
@@ -88,43 +143,113 @@
         <div class="result" id="result"></div>
     </div>
 
-    <script>
-        document.getElementById("salaryForm").addEventListener("submit", async function(e) {
-            e.preventDefault();
+    <!-- Algo Trading Panel -->
+    <div id="tradePanel" class="panel">
+        <h2>🚀 Algo Trading – Start Bot</h2>
+        <form id="tradeForm">
+            <input type="text" name="totp" placeholder="Enter 6-digit TOTP" required maxlength="6" pattern="\d{6}" />
+            <button type="submit">Start Trade</button>
+        </form>
+        <div id="tradeResult"></div>
+    </div>
+</div>
 
-            const form = e.target;
-            const formData = new FormData(form);
-            const jsonData = {};
+<script>
+// Tabs switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
 
-            formData.forEach((value, key) => {
-                jsonData[key] = parseFloat(value) || 0;
-            });
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.panel).classList.add('active');
+    });
+});
 
-            document.getElementById("loader").style.display = "block";
-            document.getElementById("result").textContent = "";
+// Toggle deductions fields based on tax regime
+const regimeSel = document.getElementById('regimeSelect');
+const deductionFields = document.getElementById('deductionsBlock');
 
-            try {
-                const response = await fetch("/salary", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(jsonData)
-                });
+regimeSel.addEventListener('change', () => {
+    const selected = regimeSel.value;
+    deductionFields.classList.toggle('hidden', selected === 'New');
+});
 
-                const data = await response.json();
+// Salary form submission
+document.getElementById("salaryForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
 
-                document.getElementById("loader").style.display = "none";
-                document.getElementById("result").innerHTML = `
-                    🎉 <span style="color:#2c3e50;">Your estimated monthly take-home salary is:</span> <br>
-                    <span style="font-size: 24px; color: #27ae60;">₹${data.monthly_salary.toFixed(2)}</span>
-                `;
-            } catch (err) {
-                document.getElementById("loader").style.display = "none";
-                document.getElementById("result").textContent = "Something went wrong. Please try again.";
-                console.error(err);
-            }
+    const form = e.target;
+    const formData = new FormData(form);
+    const jsonData = {};
+    let regime = formData.get("tax_regime");
+
+    // Don't proceed if regime is not selected
+    if (!regime) {
+        alert("Please select a tax regime.");
+        return;
+    }
+
+    formData.forEach((value, key) => {
+        jsonData[key] = parseFloat(value) || 0;
+    });
+
+    document.getElementById("loader").style.display = "block";
+    document.getElementById("result").textContent = "";
+
+    try {
+        const response = await fetch("/salary", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(jsonData),
         });
-    </script>
+
+        const data = await response.json();
+
+        document.getElementById("loader").style.display = "none";
+        document.getElementById("result").innerHTML = `
+            🎉 <span style="color:#2c3e50;">Your estimated monthly take-home salary is:</span><br>
+            <span style="font-size: 24px; color: #27ae60;">₹${data.monthly_salary.toFixed(2)}</span>
+        `;
+    } catch (err) {
+        document.getElementById("loader").style.display = "none";
+        document.getElementById("result").style.color = "red";
+        document.getElementById("result").textContent = "Something went wrong. Please try again.";
+        console.error(err);
+    }
+});
+
+// Trade form submission
+document.getElementById("tradeForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const totp = e.target.totp.value.trim();
+
+    const resultEl = document.getElementById("tradeResult");
+    resultEl.style.color = "black";
+    resultEl.textContent = "Scheduling trade...";
+
+    try {
+        const response = await fetch("/start_trade", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ totp }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            resultEl.style.color = "green";
+            resultEl.textContent = data.status;
+        } else {
+            resultEl.style.color = "red";
+            resultEl.textContent = data.error || "Failed to schedule trade.";
+        }
+    } catch (err) {
+        resultEl.style.color = "red";
+        resultEl.textContent = "Error connecting to server.";
+        console.error(err);
+    }
+});
+</script>
 </body>
 </html>

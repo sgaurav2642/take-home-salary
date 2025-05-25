@@ -1,15 +1,27 @@
 import os
+from sched import scheduler
+
 import pandas as pd
+from apscheduler.jobstores.base import JobLookupError
+
 import db
 #from py5paisa import FivePaisaClient
+from apscheduler.triggers.cron import CronTrigger
+import logging
 import json
 import requests
-import config
 import calculate_tax
+import datetime
+
+import fivepaisa_client
+import trade
 from config import AUTH_TOKEN
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__)
+
 
 
 def take_home_salary(gross, variable, tax_regime, section80c, home_loan, hra_received, rent_paid, nps):
@@ -77,6 +89,53 @@ def insert():
     except Exception as exc:
         app.logger.error("Insert failed: %s", exc, exc_info=True)
         return jsonify(status="error", message=str(exc)), 500
+
+def start_trade_logic(client):
+    """This is what APScheduler will call each time."""
+    trade.start_trade(client)
+    print("Trade function ran at", datetime.now().strftime("%H:%M:%S"))
+
+@app.route('/start_trade', methods=['POST'])
+def start_trade():
+    """
+    Body JSON:
+        {
+          "totp": "123456"
+        }
+    Schedules start_trade_logic() every weekday at 09:20.
+    """
+    data = request.get_json(force=True)
+    totp = data.get("totp")
+    if not totp:
+        return jsonify({"error": "TOTP field missing"}), 400
+
+    # --- login --- #
+    try:
+        client = fivepaisa_client.get_client(totp)
+    except Exception as exc:
+        return jsonify({"error": f"Login failed: {exc}"}), 500
+
+    # --- remove any old job with same id --- #
+    try:
+        scheduler.remove_job('trade-job')
+    except JobLookupError:
+        pass
+
+    # --- add new cron job (weekday 09:20 IST) --- #
+    scheduler.add_job(
+        func=start_trade_logic,          # DO NOT call it here
+        args=[client],                   # pass client to the job
+        trigger=CronTrigger(day_of_week='mon-fri', hour=9, minute=20),
+        id='trade-job',
+        replace_existing=True
+    )
+
+    return (
+        jsonify({"status": "Trade job scheduled for 09:20 AM (Mon-Fri)"}),
+        200
+    )
+
+
 
 
 
